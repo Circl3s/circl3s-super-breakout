@@ -55,7 +55,11 @@ function _update()
 	end
 	
 	if ball_hitbox(nextx, nexty, pd_x, pd_y, pd_w, pd_h) then
-		ball_bounce(pd_x, pd_y, pd_w, pd_h)
+		if deflx_ballbox(bl_x, bl_y, bl_dx, bl_dy, pd_x, pd_y, pd_w, pd_h) then
+			bl_dx *= -1
+		else
+			bl_dy *= -1
+		end
 		sfx(1)
 	end
 	
@@ -93,22 +97,30 @@ function ball_hitbox(nx, ny, box_x, box_y, box_w, box_h)
 	return true
 end
 
-function ball_bounce(box_x, box_y, box_w, box_h)
-	local d1, d2, d3, d4
-	d1 = dist(bl_x, bl_y, box_x, box_y)
-	d2 = dist(bl_x, bl_y, box_x + box_w, box_y)
-	d3 = dist(bl_x, bl_y, box_x + box_w, box_y + box_h)
-	d4 = dist(bl_x, bl_y, box_x, box_y + box_h)
-	
-	if ((d1 < d2 and d3 < d4) or (d2 < d1 and d4 < d3)) then
-		bl_dx *= -1
+function deflx_ballbox(bx, by, bdx, bdy, tx, ty, tw, th)
+	local slp = bdy / bdx
+	local cx, cy
+	if bdx == 0 then
+		return false
+	elseif bdy == 0 then
+		return true
+	elseif slp > 0 and bdx > 0 then
+		cx = tx - bx
+		cy = ty - by
+		return cx > 0 and cy/cx < slp
+	elseif slp < 0 and bdx > 0 then
+		cx = tx - bx
+		cy = ty + th - by
+		return cx > 0 and cy/cx >= slp
+	elseif slp > 0 and bdx < 0 then
+		cx = tx + tw - bx
+		cy = ty + th - by
+		return cx < 0 and cy/cx <= slp
 	else
-		bl_dy *= -1
+		cx = tx + tw - bx
+		cy = ty - by
+		return cx < 0 and cy/cx >= slp
 	end
-end
-
-function dist(x1, y1, x2, y2)
-	return sqrt((x1 - x2)^2 + (y1 - y2)^2)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
