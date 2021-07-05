@@ -4,15 +4,39 @@ __lua__
 -- ball variables
 bl_x = 1
 bl_y = 40
-bl_dx = 1
-bl_dy = 1
 bl_r = 2
+bl_dx = 2
+bl_dy = 2
+
+-- paddle variables
+pd_x = 52
+pd_y = 120
+pd_w = 24
+pd_h = 3
+pd_dx = 0
+pd_maxd = 4
 
 function _init()
-
+	cls()
 end
 
 function _update()
+	if btn(0) then
+		-- left
+		if (abs(pd_dx) < pd_maxd) then
+			pd_dx -= 2
+		end
+	elseif btn(1) then
+		-- right
+		if (abs(pd_dx) < pd_maxd) then
+			pd_dx += 2
+		end
+	else
+		pd_dx /= 1.69
+	end
+	
+	pd_x += pd_dx
+
 	bl_x += bl_dx
 	bl_y += bl_dy
 
@@ -30,6 +54,7 @@ end
 function _draw()
 	rectfill(0, 0, 127, 127, 1)
 	circfill(bl_x, bl_y, bl_r, 8)
+	rectfill(pd_x, pd_y, pd_x + pd_w, pd_y + pd_h, 7)
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
