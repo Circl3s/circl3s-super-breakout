@@ -4,37 +4,45 @@ __lua__
 function _init()
 	cls()
 	
-	-- ball variables
-	bl_x = 1
-	bl_y = 40
-	bl_r = 2
-	bl_dx = 2
-	bl_dy = 2
-
-	-- paddle variables
-	pd_x = 52
-	pd_y = 120
-	pd_w = 24
-	pd_h = 3
-	pd_dx = 0
-	pd_maxd = 4
+	-- game state
+	mode = "start"
 end
 
-function _update()
+--
+-- update
+--
+
+function _update60()
+	if (mode == "start") then
+		start_loop()
+	elseif (mode == "game") then
+		game_loop()
+	elseif (mode == "gameover") then
+		gameover_loop()
+	end
+end
+
+function start_loop()
+	if (btn(5) or btn(4)) then
+		start_game()
+	end
+end
+
+function game_loop()
 	local nextx, nexty
 
 	if (btn(0) and not(btn(1))) then
 		-- left
 		if (abs(pd_dx) < pd_maxd) then
-			pd_dx -= 2
+			pd_dx -= 0.8
 		end
 	elseif (btn(1) and not(btn(0))) then
 		-- right
 		if (abs(pd_dx) < pd_maxd) then
-			pd_dx += 2
+			pd_dx += 0.8
 		end
 	else
-		pd_dx /= 1.69
+		pd_dx /= 1.5
 	end
 	
 	pd_x += pd_dx
@@ -42,13 +50,13 @@ function _update()
 	nextx = bl_x + bl_dx
 	nexty = bl_y + bl_dy
 
-	if (nextx >= 127 or nextx <= 0) then
+	if (nextx >= 125 or nextx <= 2) then
 		nextx = mid(0, nextx, 127)
 		bl_dx *= -1
 		sfx(0)
 	end
 	
-	if (nexty >= 127 or nexty <= 0) then
+	if (nexty <= 9) then
 		nexty = mid(0, nexty, 127)
 		bl_dy *= -1
 		sfx(0)
@@ -60,18 +68,72 @@ function _update()
 		else
 			bl_dy *= -1
 		end
+		points += 10
 		sfx(1)
 	end
 	
 	bl_x = nextx
 	bl_y = nexty
+	
+	if (nexty >= 126) then
+		lives -= 1
+		sfx(3)
+		if (lives < 0) then
+			gameover()
+			sfx(2)
+		else
+			serve()
+		end
+	end
 end
 
+function gameover_loop()
+	if btn(5) then
+		start_game()
+	end
+end
+
+--
+-- draw
+--
+
 function _draw()
+	if (mode == "start") then
+		draw_start()
+	elseif (mode == "game") then
+		draw_game()
+	elseif (mode == "gameover") then
+		draw_gameover()
+	else
+		cls()
+		print("error: unknown game state")
+	end
+end
+
+function draw_start()
+	cls()
+	align("center", "circl3s' super breakout", 56, 7)
+	align("center", "press 🅾️ or ❎ to start", 62, 6)
+end
+
+function draw_game()
 	cls(1)
 	circfill(bl_x, bl_y, bl_r, 8)
 	rectfill(pd_x, pd_y, pd_x + pd_w, pd_y + pd_h, 7)
+	rectfill(0, 0, 127, 6, 0)
+	print("lives: ", 1, 1, 7)
+	print(livestring, 25, 1, 8)
+	align("right", "score:" .. points, 1, 7)
 end
+
+function draw_gameover()
+	align("center", "game over :(", 56, 8)
+	align("center", "press ❎ to restart", 62, 6)
+end
+
+--
+-- functions
+--
 
 function ball_hitbox(nx, ny, box_x, box_y, box_w, box_h)
 	-- top edge of ball
@@ -122,6 +184,64 @@ function deflx_ballbox(bx, by, bdx, bdy, tx, ty, tw, th)
 		return cx < 0 and cy/cx >= slp
 	end
 end
+
+function update_livestring()
+	local x = 0
+	livestring = ""
+	while (x < lives) do
+		livestring ..= "♥"
+		x += 1
+	end
+end
+
+function serve()
+	-- ball variables
+	bl_x = 5
+	bl_y = 40
+	bl_r = 2
+	bl_dx = 1
+	bl_dy = 1
+	
+	update_livestring()
+end
+
+function gameover()
+	mode = "gameover"
+end
+
+function start_game()
+	-- paddle variables
+	pd_x = 52
+	pd_y = 120
+	pd_w = 24
+	pd_h = 3
+	pd_dx = 0
+	pd_maxd = 2
+	
+	-- game state
+	mode = "game"
+	lives = 3
+	points = 0
+	
+	serve()
+end
+
+function align(mode, t, y, c)
+	local l = #t * 2
+	local x = 1
+	while (x <= #t) do
+		if (ord(t, x) >= 128) then
+			l += 2
+		end
+		x += 1
+	end
+	
+	if (mode == "center") then
+		print(t, 63 - l, y, c)
+	elseif (mode == "right") then
+		print(t, 128 - (l * 2), y, c)
+	end
+end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -131,4 +251,6 @@ __gfx__
 00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 000100002605026050260302602026010323000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000200001235011340103301032010310103100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010100002d0502d0502d0302d0202d010323000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01140000115501155010550105500f5500f5500e5500e5500e5520e5520e5520e5520e55500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0002000027450224301d430164200f42009410000000000027440224301d420164200f41009410000000000027430224201d420164100f41009410000000000027420224201d410164100f410094100000000000
