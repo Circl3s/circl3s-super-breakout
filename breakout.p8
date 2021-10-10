@@ -3,6 +3,7 @@ version 29
 __lua__
 function _init()
 	cls()
+	version = 1
 	
 	-- global brick properties
 	br_w = 10
@@ -110,9 +111,9 @@ function game_loop()
 	end
 	
 	-- cheat
-	if (btn(4, 1)) then
-		brick_array = {}
-	end
+	-- if (btn(4, 1)) then
+	--	 brick_array = {}
+	-- end
 end
 
 function gameover_loop()
@@ -150,6 +151,7 @@ function draw_start()
 	cls()
 	align("center", "circl3s' super breakout", 56, 7)
 	align("center", "press ❎ to start", 62, 6)
+	print("v" .. version, 1, 1, 5)
 end
 
 function draw_game()
