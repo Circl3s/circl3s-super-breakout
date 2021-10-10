@@ -29,7 +29,7 @@ function _update60()
 end
 
 function start_loop()
-	if (btn(5) or btn(4)) then
+	if (btn(5)) then
 		start_game()
 	end
 end
@@ -58,8 +58,17 @@ function game_loop()
 	pd_x += pd_dx
 	pd_x = mid(0, pd_x, 127 - pd_w)
 	
-	nextx = bl_x + bl_dx
-	nexty = bl_y + bl_dy
+	if (not serving) then
+		nextx = bl_x + bl_dx
+		nexty = bl_y + bl_dy
+	else
+		nextx = pd_x + (pd_w / 2)
+		nexty = pd_y - pd_h - 2
+	end
+	
+	if (btn(4)) then	
+		serving = false
+	end
 
 	if (nextx >= 125 or nextx <= 2) then
 		nextx = mid(0, nextx, 127)
@@ -140,7 +149,7 @@ end
 function draw_start()
 	cls()
 	align("center", "circl3s' super breakout", 56, 7)
-	align("center", "press 🅾️ or ❎ to start", 62, 6)
+	align("center", "press ❎ to start", 62, 6)
 end
 
 function draw_game()
@@ -155,6 +164,9 @@ function draw_game()
 	print(livestring, 25, 1, 8)
 	align("center", "lvl " .. level, 1, 14)
 	align("right", "score:" .. points .. "0", 1, 7)
+	if (serving) then
+		align("center", "press 🅾️ to serve", 72, 13)
+	end
 end
 
 function draw_gameover()
@@ -232,12 +244,11 @@ end
 
 function serve()
 	-- ball variables
-	bl_x = 60
-	bl_y = 64
+	serving = true
 	bl_r = 2
 	bl_dx = 1 + ((level - 1) * 0.15)
-	bl_dy = 1 + ((level - 1) * 0.15)
-	
+	bl_dy = - (1 + ((level - 1) * 0.15))
+		
 	update_livestring()
 end
 
@@ -306,7 +317,7 @@ function align(mode, t, y, c)
 end
 
 function start_music()
-	music((level - 1) * 8)
+	music(mid(0, (level - 1) * 8, 24))
 end
 
 function add_points(p)
@@ -564,7 +575,7 @@ __music__
 00 41544344
 00 41544344
 00 41544344
-00 14544344
+00 54144344
 00 41544344
 00 41544344
 
